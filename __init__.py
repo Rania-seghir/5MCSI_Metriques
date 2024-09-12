@@ -39,49 +39,42 @@ def histogramme():
     return render_template("histogramme.html")
 
 
-# Route pour récupérer et afficher les commits
-@app.route('/commits/')
-def commits():
-    url = 'https://api.github.com/repos/OpenRSI/5MCSI_Metriques/commits'
-    
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  # Vérifie que la requête a réussi
-        commits_data = response.json()
-    except requests.exceptions.RequestException as e:
-        return f"Erreur de récupération des données : {e}", 500
+# Fonction pour récupérer les commits via l'API GitHub
+def get_commits():
+    url = "https://api.github.com/repos/OpenRSI/5MCSI_Metriques/commits"
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Erreur lors de la récupération des commits: {response.status_code}")
+        return []
 
-    # Extraire les dates des commits
-    commit_dates = [commit['commit']['author']['date'] for commit in commits_data]
+# Fonction pour extraire les minutes des commits
+def extract_minutes(commits):
+    commit_minutes = []
+    for commit in commits:
+        date_str = commit['commit']['author']['date']
+        date_object = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%SZ')
+        commit_minutes.append(date_object.minute)
+    return commit_minutes
+
+# Route pour servir la page HTML
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+# Route API pour renvoyer les données des commits sous forme de JSON
+@app.route('/api/commits')
+def api_commits():
+    commits = get_commits()
+    minutes = extract_minutes(commits)
     
     # Compter le nombre de commits par minute
-    minute_counts = {}
-    for date_string in commit_dates:
-        try:
-            date_object = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
-            minute = date_object.strftime('%Y-%m-%d %H:%M')  # Format pour regrouper les minutes
-            if minute in minute_counts:
-                minute_counts[minute] += 1
-            else:
-                minute_counts[minute] = 1
-        except ValueError:
-            continue  # Ignore les dates au format incorrect
+    minute_counts = [0] * 60
+    for minute in minutes:
+        minute_counts[minute] += 1
     
-    # Préparer les données pour le graphique
-    chart_data = [{'minute': minute, 'count': count} for minute, count in sorted(minute_counts.items())]
-    
-    return render_template('commits.html', chart_data=chart_data)
-
-# Route pour extraire les minutes d'une date
-@app.route('/extract-minutes/<date_string>')
-def extract_minutes(date_string):
-    try:
-        date_object = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
-        minutes = date_object.minute
-        return jsonify({'minutes': minutes})
-    except ValueError:
-        return jsonify({'error': 'Format de date invalide'}), 400
-
+    return jsonify(minute_counts)
 
 if __name__ == "__main__":
   app.run(debug=True)
