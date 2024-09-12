@@ -42,16 +42,7 @@
                 chart.draw(dataTable, options);
             }
 
-            // Récupération des données depuis l'API
-            fetch('/rapport/data/')
-                .then(response => response.json())
-                .then(data => {
-                    renderChart(data);
-                })
-                .catch(error => {
-                    console.error('Erreur lors de la récupération des données :', error);
-                });
-        }
+            
     </script>
 </body>
 </html>
