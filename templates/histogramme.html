@@ -6,7 +6,7 @@
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
 <body>
-    <h2>Mon Graphique</h2>
+    <h2>Mon Histogramme</h2>
     <div id="chart_div"></div>
     <script>
         // Charger la bibliothèque Google Charts
@@ -34,7 +34,8 @@
                     vAxis: { title: 'Température' },
                     bars: 'vertical', // Histogramme vertical
                     width: 800,
-                    height: 600
+                    height: 600,
+                    legend: { position: 'none' }
                 };
 
                 var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
@@ -42,7 +43,7 @@
             }
 
             // Récupération des données depuis l'API
-            fetch('/rapport/')
+            fetch('/rapport/data/')
                 .then(response => response.json())
                 .then(data => {
                     renderChart(data);
@@ -54,3 +55,4 @@
     </script>
 </body>
 </html>
+
