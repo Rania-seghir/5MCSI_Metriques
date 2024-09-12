@@ -1,58 +1,46 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="UTF-8" />
-    <title>Graphique</title>
+  <head>
+    <meta charset="UTF-8">
+    <title>Histogramme des Températures</title>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-</head>
-<body>
-    <h2>Mon Histogramme</h2>
-    <div id="chart_div"></div>
+  </head>
+  <body>
+    <h1>Histogramme des Températures de Tawarano</h1>
+    <div id="histogram_div" style="width: 900px; height: 500px;"></div>
+
     <script>
-        // Charger la bibliothèque Google Charts
-        google.charts.load('current', { packages: ['corechart'] });
-        google.charts.setOnLoadCallback(drawChart);
+      // Charger la bibliothèque Google Charts
+      google.charts.load('current', { packages: ['corechart'] });
+      google.charts.setOnLoadCallback(drawChart);
 
-        function drawChart() {
-            // Fonction pour dessiner le graphique
-            function renderChart(data) {
-                // Créer un tableau de données pour Google Charts
-                var dataTable = new google.visualization.DataTable();
-                dataTable.addColumn('string', 'Date');
-                dataTable.addColumn('number', 'Valeur');
+      function drawChart() {
+        fetch('/tawarano/')
+          .then(response => response.json())
+          .then(data => {
+            var dataTable = new google.visualization.DataTable();
+            dataTable.addColumn('string', 'Date');
+            dataTable.addColumn('number', 'Température');
 
-                // Ajouter les données à la table
-                data.results.forEach(entry => {
-                    var date = new Date(entry.Jour * 1000);
-                    dataTable.addRow([date.toLocaleDateString(), entry.temp]);
-                });
+            data.results.forEach(entry => {
+              var date = new Date(entry.Jour * 1000);
+              dataTable.addRow([date.toLocaleDateString(), entry.temp]);
+            });
 
-                // Configurer les options du graphique à barres
-                var options = {
-                    title: 'Évolution des températures de la ville de Tawarano',
-                    hAxis: { title: 'Date' },
-                    vAxis: { title: 'Température' },
-                    bars: 'vertical', // Histogramme vertical
-                    width: 800,
-                    height: 600,
-                    legend: { position: 'none' }
-                };
+            var options = {
+              title: 'Histogramme des Températures de Tawarano',
+              legend: { position: 'none' },
+              hAxis: { title: 'Date' },
+              vAxis: { title: 'Température (°C)' },
+              bar: { groupWidth: '75%' },
+              colors: ['#76A7FA']
+            };
 
-                var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
-                chart.draw(dataTable, options);
-            }
-
-            // Récupération des données depuis l'API
-            fetch('/rapport/data/')
-                .then(response => response.json())
-                .then(data => {
-                    renderChart(data);
-                })
-                .catch(error => {
-                    console.error('Erreur lors de la récupération des données :', error);
-                });
-        }
+            var chart = new google.visualization.ColumnChart(document.getElementById('histogram_div'));
+            chart.draw(dataTable, options);
+          });
+      }
     </script>
-</body>
+  </body>
 </html>
 
