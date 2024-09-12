@@ -2,56 +2,22 @@
 <html>
 <head>
     <meta charset="UTF-8" />
-    <title>Graphique</title>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <title>Formulaire de Contact</title>
 </head>
 <body>
-    <h2>Mon Histogramme</h2>
-    <div id="chart_div"></div>
-    <script>
-        // Charger la bibliothèque Google Charts
-        google.charts.load('current', { packages: ['corechart'] });
-        google.charts.setOnLoadCallback(drawChart);
+    <h2>Formulaire de Contact</h2>
+    <form action="/submit" method="post">
+        <label for="first_name">Prénom:</label><br>
+        <input type="text" id="first_name" name="first_name" required><br><br>
 
-        function drawChart() {
-            // Fonction pour dessiner le graphique
-            function renderChart(data) {
-                // Créer un tableau de données pour Google Charts
-                var dataTable = new google.visualization.DataTable();
-                dataTable.addColumn('string', 'Date');
-                dataTable.addColumn('number', 'Valeur');
+        <label for="last_name">Nom:</label><br>
+        <input type="text" id="last_name" name="last_name" required><br><br>
 
-                // Ajouter les données à la table
-                data.results.forEach(entry => {
-                    var date = new Date(entry.Jour * 1000);
-                    dataTable.addRow([date.toLocaleDateString(), entry.temp]);
-                });
+        <label for="message">Message:</label><br>
+        <textarea id="message" name="message" rows="4" cols="50" required></textarea><br><br>
 
-                // Configurer les options du graphique à barres
-                var options = {
-                    title: 'Évolution des températures de la ville de Tawarano',
-                    hAxis: { title: 'Date' },
-                    vAxis: { title: 'Température' },
-                    bars: 'vertical', // Histogramme vertical
-                    width: 800,
-                    height: 600,
-                    legend: { position: 'none' }
-                };
-
-                var chart = new google.visualization.BarChart(document.getElementById('chart_div'));
-                chart.draw(dataTable, options);
-            }
-
-            // Récupération des données depuis l'API
-            fetch('/rapport/data/')
-                .then(response => response.json())
-                .then(data => {
-                    renderChart(data);
-                })
-                .catch(error => {
-                    console.error('Erreur lors de la récupération des données :', error);
-                });
-        }
-    </script>
+        <input type="submit" value="Envoyer">
+    </form>
 </body>
 </html>
+
