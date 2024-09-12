@@ -1,54 +1,46 @@
 <!DOCTYPE html>
-<html lang="fr">
-  <head>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Graphique des Commits</title>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-  </head>
-  <body>
-    <h1>Commits Minute par Minute</h1>
-    <div id="commits_chart" style="width: 900px; height: 500px;"></div>
+    <title>Commits Graph</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Commits par minute</h1>
+    <canvas id="commitsChart"></canvas>
 
     <script>
-      // Charger Google Charts
-      google.charts.load('current', { packages: ['corechart'] });
-      google.charts.setOnLoadCallback(drawChart);
-
-      function drawChart() {
-        // Appel à l'API Flask pour récupérer les données des commits
+        // Récupérer les données de l'API des commits
         fetch('/api/commits/')
-          .then(response => response.json())
-          .then(data => {
-            // Préparer les données pour Google Charts
-            var dataTable = new google.visualization.DataTable();
-            dataTable.addColumn('string', 'Minute');
-            dataTable.addColumn('number', 'Nombre de Commits');
+            .then(response => response.json())
+            .then(data => {
+                // Préparer les données pour Chart.js
+                const labels = Object.keys(data);
+                const values = Object.values(data);
 
-            // Ajouter les données reçues à la table
-            for (var minute in data) {
-              dataTable.addRow([minute.toString(), data[minute]]);
-            }
-
-            // Options du graphique
-            var options = {
-              title: 'Nombre de Commits par Minute',
-              hAxis: { title: 'Minute' },
-              vAxis: { title: 'Nombre de Commits' },
-              legend: 'none',
-              colors: ['#76A7FA'],
-              bar: { groupWidth: '75%' }
-            };
-
-            // Créer le graphique dans la div
-            var chart = new google.visualization.ColumnChart(document.getElementById('commits_chart'));
-            chart.draw(dataTable, options);
-          })
-          .catch(error => console.error('Erreur lors de la récupération des données :', error));
-      }
+                const ctx = document.getElementById('commitsChart').getContext('2d');
+                const commitsChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Nombre de commits',
+                            data: values,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
     </script>
-  </body>
+</body>
 </html>
-
-
-
