@@ -1,83 +1,53 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commits par minute</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f5f5f5;
-        }
-        h1 {
-            text-align: center;
-        }
-        #chart-container {
-            width: 80%;
-            max-width: 700px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Commits par minute</h1>
-    <div id="chart-container">
-        <canvas id="commitChart"></canvas>
-    </div>
+    <title>Graphique des Commits</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  </head>
+  <body>
+    <h1>Commits Minute par Minute</h1>
+    <div id="commits_chart" style="width: 900px; height: 500px;"></div>
 
     <script>
-        // Fonction pour obtenir les données de commits via l'API Flask
-        async function fetchCommitData() {
-            try {
-                const response = await fetch('/api/commits');
-                const data = await response.json();
-                return data;
-            } catch (error) {
-                console.error('Erreur lors de la récupération des données des commits:', error);
-                return [];
+      // Charger Google Charts
+      google.charts.load('current', { packages: ['corechart'] });
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+        // Appel à l'API Flask pour récupérer les données des commits
+        fetch('/api/commits/')
+          .then(response => response.json())
+          .then(data => {
+            // Préparer les données pour Google Charts
+            var dataTable = new google.visualization.DataTable();
+            dataTable.addColumn('string', 'Minute');
+            dataTable.addColumn('number', 'Nombre de Commits');
+
+            // Ajouter les données reçues à la table
+            for (var minute in data) {
+              dataTable.addRow([minute.toString(), data[minute]]);
             }
-        }
 
-        // Fonction pour afficher le graphique avec Chart.js
-        async function displayChart() {
-            const commitData = await fetchCommitData();
-            const ctx = document.getElementById('commitChart').getContext('2d');
+            // Options du graphique
+            var options = {
+              title: 'Nombre de Commits par Minute',
+              hAxis: { title: 'Minute' },
+              vAxis: { title: 'Nombre de Commits' },
+              legend: 'none',
+              colors: ['#76A7FA'],
+              bar: { groupWidth: '75%' }
+            };
 
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: Array.from({ length: 60 }, (_, i) => i), // Labels pour les minutes (0-59)
-                    datasets: [{
-                        label: 'Nombre de commits',
-                        data: commitData,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                precision: 0 // Pas de décimales sur l'axe Y
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Charger le graphique quand la page est prête
-        displayChart();
+            // Créer le graphique dans la div
+            var chart = new google.visualization.ColumnChart(document.getElementById('commits_chart'));
+            chart.draw(dataTable, options);
+          })
+          .catch(error => console.error('Erreur lors de la récupération des données :', error));
+      }
     </script>
-</body>
+  </body>
 </html>
 
 
