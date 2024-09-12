@@ -38,58 +38,39 @@ def mongraphique():
 def histogramme():
     return render_template("histogramme.html")
 
-<!DOCTYPE html>
-<html lang="fr">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Graphique des Commits</title>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-  </head>
-  <body>
-    <h1>Commits Minute par Minute</h1>
-    <div id="commits_chart" style="width: 900px; height: 500px;"></div>
+# Route pour extraire les minutes d'une date
+@app.route('/extract-minutes/<date_string>')
+def extract_minutes(date_string):
+    date_object = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
+    minutes = date_object.minute
+    return jsonify({'minutes': minutes})
 
-    <script>
-      // Charger Google Charts
-      google.charts.load('current', { packages: ['corechart'] });
-      google.charts.setOnLoadCallback(drawChart);
+# Route pour les commits
+@app.route("/commits/")
+def commits():
+    return render_template("commits.html")
 
-      function drawChart() {
-        // Appel à l'API Flask pour récupérer les données des commits
-        fetch('/api/commits/')
-          .then(response => response.json())
-          .then(data => {
-            // Préparer les données pour Google Charts
-            var dataTable = new google.visualization.DataTable();
-            dataTable.addColumn('string', 'Minute');
-            dataTable.addColumn('number', 'Nombre de Commits');
+# Route pour récupérer les données des commits via l'API GitHub
+@app.route("/api/commits/")
+def get_commits():
+    url = 'https://api.github.com/repos/OpenRSI/5MCSI_Metriques/commits'
+    response = urlopen(url)
+    raw_content = response.read()
+    commits_data = json.loads(raw_content.decode('utf-8'))
 
-            // Ajouter les données reçues à la table
-            for (var minute in data) {
-              dataTable.addRow([minute.toString(), data[minute]]);
-            }
+    # Extraire les minutes des commits
+    commits_by_minute = {}
+    for commit in commits_data:
+        date_string = commit['commit']['author']['date']
+        date_object = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
+        minute = date_object.minute
+        if minute in commits_by_minute:
+            commits_by_minute[minute] += 1
+        else:
+            commits_by_minute[minute] = 1
 
-            // Options du graphique
-            var options = {
-              title: 'Nombre de Commits par Minute',
-              hAxis: { title: 'Minute' },
-              vAxis: { title: 'Nombre de Commits' },
-              legend: 'none',
-              colors: ['#76A7FA'],
-              bar: { groupWidth: '75%' }
-            };
-
-            // Créer le graphique dans la div
-            var chart = new google.visualization.ColumnChart(document.getElementById('commits_chart'));
-            chart.draw(dataTable, options);
-          })
-          .catch(error => console.error('Erreur lors de la récupération des données :', error));
-      }
-    </script>
-  </body>
-</html>
-
+    return jsonify(commits_by_minute)
+  
 if __name__ == "__main__":
   app.run(debug=True)
 
