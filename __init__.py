@@ -39,18 +39,16 @@ def histogramme():
     return render_template("histogramme.html")
 
 
-# Route pour les commits
-@app.route("/commits/")
-def commits():
-    return render_template("commits.html")
-
-# Route pour récupérer les données des commits via l'API GitHub
 @app.route("/api/commits/")
 def get_commits():
     url = 'https://api.github.com/repos/OpenRSI/5MCSI_Metriques/commits'
-    response = urlopen(url)
-    raw_content = response.read()
-    commits_data = json.loads(raw_content.decode('utf-8'))
+    
+    try:
+        response = urlopen(url)
+        raw_content = response.read()
+        commits_data = json.loads(raw_content.decode('utf-8'))
+    except Exception as e:
+        return jsonify({"error": "Unable to fetch commits data", "details": str(e)}), 500
 
     # Extraire les minutes des commits
     commits_by_minute = {}
@@ -64,6 +62,7 @@ def get_commits():
             commits_by_minute[minute] = 1
 
     return jsonify(commits_by_minute)
+
   
 if __name__ == "__main__":
   app.run(debug=True)
