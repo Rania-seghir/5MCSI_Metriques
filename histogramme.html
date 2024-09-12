@@ -2,12 +2,14 @@
 <html>
 <head>
     <meta charset="UTF-8" />
-    <title>Métrique</title>
+    <title>Graphique</title>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
 <body>
+    <h2>Mon Graphique</h2>
     <div id="chart_div"></div>
     <script>
+        // Charger la bibliothèque Google Charts
         google.charts.load('current', { packages: ['corechart'] });
         google.charts.setOnLoadCallback(drawChart);
 
@@ -18,7 +20,7 @@
                 var dataTable = new google.visualization.DataTable();
                 dataTable.addColumn('string', 'Date');
                 dataTable.addColumn('number', 'Valeur');
-                
+
                 // Ajouter les données à la table
                 data.results.forEach(entry => {
                     var date = new Date(entry.Jour * 1000);
@@ -39,8 +41,8 @@
                 chart.draw(dataTable, options);
             }
 
-            // Récupération des données depuis notre API /tawarano/
-            fetch('/tawarano/')
+            // Récupération des données depuis l'API
+            fetch('/rapport/')
                 .then(response => response.json())
                 .then(data => {
                     renderChart(data);
@@ -52,3 +54,4 @@
     </script>
 </body>
 </html>
+
