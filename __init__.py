@@ -42,25 +42,30 @@ def histogramme():
 # Route pour récupérer et afficher les commits
 @app.route('/commits/')
 def commits():
-    # URL de l'API GitHub pour récupérer les commits
     url = 'https://api.github.com/repos/OpenRSI/5MCSI_Metriques/commits'
     
-    # Effectuer la requête HTTP pour récupérer les commits
-    response = requests.get(url)
-    commits_data = response.json()
-    
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Vérifie que la requête a réussi
+        commits_data = response.json()
+    except requests.exceptions.RequestException as e:
+        return f"Erreur de récupération des données : {e}", 500
+
     # Extraire les dates des commits
     commit_dates = [commit['commit']['author']['date'] for commit in commits_data]
     
     # Compter le nombre de commits par minute
     minute_counts = {}
     for date_string in commit_dates:
-        date_object = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
-        minute = date_object.strftime('%Y-%m-%d %H:%M')  # Format pour regrouper les minutes
-        if minute in minute_counts:
-            minute_counts[minute] += 1
-        else:
-            minute_counts[minute] = 1
+        try:
+            date_object = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
+            minute = date_object.strftime('%Y-%m-%d %H:%M')  # Format pour regrouper les minutes
+            if minute in minute_counts:
+                minute_counts[minute] += 1
+            else:
+                minute_counts[minute] = 1
+        except ValueError:
+            continue  # Ignore les dates au format incorrect
     
     # Préparer les données pour le graphique
     chart_data = [{'minute': minute, 'count': count} for minute, count in sorted(minute_counts.items())]
@@ -70,9 +75,12 @@ def commits():
 # Route pour extraire les minutes d'une date
 @app.route('/extract-minutes/<date_string>')
 def extract_minutes(date_string):
-    date_object = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
-    minutes = date_object.minute
-    return jsonify({'minutes': minutes})
+    try:
+        date_object = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
+        minutes = date_object.minute
+        return jsonify({'minutes': minutes})
+    except ValueError:
+        return jsonify({'error': 'Format de date invalide'}), 400
 
 
 if __name__ == "__main__":
