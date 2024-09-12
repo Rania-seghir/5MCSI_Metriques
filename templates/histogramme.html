@@ -2,11 +2,11 @@
 <html>
 <head>
     <meta charset="UTF-8" />
-    <title>Histogramme des Températures</title>
+    <title>Graphique</title>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
 <body>
-    <h2>Évolution des Températures de Tawarano</h2>
+    <h2>Mon Histogramme</h2>
     <div id="chart_div"></div>
     <script>
         // Charger la bibliothèque Google Charts
@@ -19,7 +19,7 @@
                 // Créer un tableau de données pour Google Charts
                 var dataTable = new google.visualization.DataTable();
                 dataTable.addColumn('string', 'Date');
-                dataTable.addColumn('number', 'Température');
+                dataTable.addColumn('number', 'Valeur');
 
                 // Ajouter les données à la table
                 data.results.forEach(entry => {
@@ -29,7 +29,7 @@
 
                 // Configurer les options du graphique à barres
                 var options = {
-                    title: 'Évolution des Températures',
+                    title: 'Évolution des températures de la ville de Tawarano',
                     hAxis: { title: 'Date' },
                     vAxis: { title: 'Température' },
                     bars: 'vertical', // Histogramme vertical
@@ -42,9 +42,17 @@
                 chart.draw(dataTable, options);
             }
 
-            
+            // Récupération des données depuis l'API
+            fetch('/rapport/data/')
+                .then(response => response.json())
+                .then(data => {
+                    renderChart(data);
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la récupération des données :', error);
+                });
+        }
     </script>
 </body>
 </html>
-
 
