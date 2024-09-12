@@ -42,10 +42,8 @@ def histogramme():
 # Route pour récupérer et afficher les commits
 @app.route('/commits/')
 def commits():
-   {
-    "message": "API rate limit exceeded for 83.142.147.16. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.)",
-    "documentation_url": "https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting"
-}
+    # URL de l'API GitHub pour récupérer les commits
+    url = 'https://api.github.com/repos/OpenRSI/5MCSI_Metriques/commits'
     
     # Effectuer la requête HTTP pour récupérer les commits
     response = requests.get(url)
@@ -75,6 +73,7 @@ def extract_minutes(date_string):
     date_object = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
     minutes = date_object.minute
     return jsonify({'minutes': minutes})
+
 
 if __name__ == "__main__":
   app.run(debug=True)
