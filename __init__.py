@@ -34,27 +34,7 @@ def meteo():
 def mongraphique():
     return render_template("graphique.html")
 
-from flask import Flask, render_template, jsonify
 
-app = Flask(__name__)
-
-@app.route("/rapport/")
-def mongraphique():
-    # Retourner le fichier HTML
-    return render_template("graphique.html")
-
-@app.route("/rapport/data/")
-def rapport_data():
-    # Simuler des données pour l'exemple
-    data = {
-        "results": [
-            {"Jour": 1638316800, "temp": 15},
-            {"Jour": 1638403200, "temp": 16},
-            {"Jour": 1638489600, "temp": 14},
-            {"Jour": 1638576000, "temp": 17},
-        ]
-    }
-    return jsonify(data)
 
 if __name__ == "__main__":
     app.run(debug=True)
