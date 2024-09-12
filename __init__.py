@@ -38,10 +38,41 @@ def mongraphique():
 def histogramme():
     return render_template("histogramme.html")
 
-@app.route("/commits/")
-def commits():
-    return render_template("commits.html")
 
+# Route pour récupérer et afficher les commits
+@app.route('/commits/')
+def commits():
+    # URL de l'API GitHub pour récupérer les commits
+    url = 'https://api.github.com/repos/OpenRSI/5MCSI_Metriques/commits'
+    
+    # Effectuer la requête HTTP pour récupérer les commits
+    response = requests.get(url)
+    commits_data = response.json()
+    
+    # Extraire les dates des commits
+    commit_dates = [commit['commit']['author']['date'] for commit in commits_data]
+    
+    # Compter le nombre de commits par minute
+    minute_counts = {}
+    for date_string in commit_dates:
+        date_object = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
+        minute = date_object.strftime('%Y-%m-%d %H:%M')  # Format pour regrouper les minutes
+        if minute in minute_counts:
+            minute_counts[minute] += 1
+        else:
+            minute_counts[minute] = 1
+    
+    # Préparer les données pour le graphique
+    chart_data = [{'minute': minute, 'count': count} for minute, count in sorted(minute_counts.items())]
+    
+    return render_template('commits.html', chart_data=chart_data)
+
+# Route pour extraire les minutes d'une date
+@app.route('/extract-minutes/<date_string>')
+def extract_minutes(date_string):
+    date_object = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
+    minutes = date_object.minute
+    return jsonify({'minutes': minutes})
 
 if __name__ == "__main__":
   app.run(debug=True)
