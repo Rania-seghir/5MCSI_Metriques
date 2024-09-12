@@ -39,30 +39,20 @@ def histogramme():
     return render_template("histogramme.html")
 
 
-@app.route("/api/commits/")
-def get_commits():
-    url = 'https://api.github.com/repos/OpenRSI/5MCSI_Metriques/commits'
-    
+@app.route('/extract-minutes/<date_string>')
+def extract_minutes(date_string):
     try:
-        response = urlopen(url)
-        raw_content = response.read()
-        commits_data = json.loads(raw_content.decode('utf-8'))
-    except Exception as e:
-        return jsonify({"error": "Unable to fetch commits data", "details": str(e)}), 500
-
-    # Extraire les minutes des commits
-    commits_by_minute = {}
-    for commit in commits_data:
-        date_string = commit['commit']['author']['date']
         date_object = datetime.strptime(date_string, '%Y-%m-%dT%H:%M:%SZ')
-        minute = date_object.minute
-        if minute in commits_by_minute:
-            commits_by_minute[minute] += 1
-        else:
-            commits_by_minute[minute] = 1
+        minutes = date_object.strftime('%Y-%m-%d %H:%M')  # Format minute
+        return jsonify({'minutes': minutes})
+    except ValueError:
+        return jsonify({'error': 'Invalid date format. Use the following format: YYYY-MM-DDTHH:MM:SSZ'}), 400
+  
 
-    return jsonify(commits_by_minute)
-
+@app.route('/commits/')
+def commits_graph():
+    # Servir le fichier HTML pour le graphique
+    return render_template('commits.html')
   
 if __name__ == "__main__":
   app.run(debug=True)
